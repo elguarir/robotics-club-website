@@ -9,19 +9,31 @@ enum Role {
 }
 
 interface IUser {
+  _id: string;
+  name: string;
   username: string;
   password: string;
+  profilePic: string;
   email: string;
   roles: Array<string>;
 }
 
 const UserSchema = new Schema<IUser>(
   {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     username: {
       type: String,
       required: true,
       unique: true,
       trim: true,
+    },
+    profilePic: {
+      type: String,
+      default: "",
     },
     password: {
       type: String,

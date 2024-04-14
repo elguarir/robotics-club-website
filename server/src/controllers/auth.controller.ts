@@ -2,9 +2,13 @@ import bcrypt from "bcrypt";
 import * as z from "zod";
 import type { Request, Response } from "express";
 import { User } from "@/models/user.model";
-import { encrypt } from "@/utils/generateToken";
+import { encrypt } from "@/utils/jwt";
+
 export const signup = async (req: Request, res: Response) => {
   const registerSchema = z.object({
+    name: z
+      .string()
+      .min(3, { message: "name must be at least 3 characters long" }),
     email: z
       .string()
       .email("This must be a valid email address")
@@ -33,15 +37,25 @@ export const signup = async (req: Request, res: Response) => {
   try {
     const validatedData = await registerSchema.safeParseAsync(req.body);
     if (validatedData.success) {
-      let { email, password, username } = validatedData.data;
+      let { email, password, username, name } = validatedData.data;
       const hashedPassword = await bcrypt.hash(password, 10);
-      const user = new User({ email, password: hashedPassword, username });
+      const user = new User({
+        name,
+        email,
+        password: hashedPassword,
+        username,
+        profilePic: new URL(
+          "https://ui-avatars.com/api/?name=" + name
+        ).toString(),
+      });
       await user.save();
 
       // generate a jwt token
       const token = await encrypt({
         user: {
           _id: user._id.toString(),
+          name: user.name,
+          profilePic: user.profilePic,
           username: user.username,
           email: user.email,
           roles: user.roles,
@@ -58,6 +72,8 @@ export const signup = async (req: Request, res: Response) => {
         success: true,
         data: {
           _id: user._id,
+          name: user.name,
+          profilePic: user.profilePic,
           username: user.username,
           email: user.email,
           roles: user.roles,
@@ -88,7 +104,6 @@ export const signup = async (req: Request, res: Response) => {
     }
   }
 };
-
 export const login = async (req: Request, res: Response) => {
   const loginSchema = z.object({
     email: z.string().email("This must be a valid email address"),
@@ -110,6 +125,8 @@ export const login = async (req: Request, res: Response) => {
         const token = await encrypt({
           user: {
             _id: user._id.toString(),
+            name: user.name,
+            profilePic: user.profilePic,
             username: user.username,
             email: user.email,
             roles: user.roles,
@@ -125,6 +142,8 @@ export const login = async (req: Request, res: Response) => {
           success: true,
           data: {
             _id: user._id,
+            name: user.name,
+            profilePic: user.profilePic,
             username: user.username,
             email: user.email,
             roles: user.roles,
@@ -161,7 +180,6 @@ export const login = async (req: Request, res: Response) => {
     }
   }
 };
-
 export const logout = async (req: Request, res: Response) => {
   res.clearCookie("token");
   res.status(200).json({
@@ -170,6 +188,72 @@ export const logout = async (req: Request, res: Response) => {
   });
 };
 
-export const refresh = async (req: Request, res: Response) => {};
+export const profile = async (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    data: req.user ?? null,
+  });
+};
 
+export const updateProfile = async (req: Request, res: Response) => {
+  const updateProfileSchema = z.object({
+    name: z
+      .string()
+      .min(3, { message: "name must be at least 3 characters long" }),
+    username: z.string().min(3, {
+      message: "username must be at least 3 characters long",
+    }),
+    profilePic: z.string().url({ message: "profilePic must be a valid url" }),
+  });
+
+  try {
+    const validatedData = await updateProfileSchema.safeParseAsync(req.body);
+    if (validatedData.success) {
+      let { name, username, profilePic } = validatedData.data;
+      let user = await User.findOneAndUpdate(
+        { _id: req.user._id },
+        { name, username, profilePic },
+        { new: true }
+      );
+      if (!user) {
+        throw new Error("User not found");
+      }
+      res.status(200).json({
+        success: true,
+        data: {
+          _id: user._id,
+          name: user.name,
+          profilePic: user.profilePic,
+          username: user.username,
+          email: user.email,
+          roles: user.roles,
+        },
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        errors: validatedData.error.errors.map((error) => {
+          return {
+            path: error.path.join("."),
+            message: error.message,
+          };
+        }),
+      });
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        errors: [{ path: "unknown", message: "An unknown error occurred" }],
+      });
+    }
+  }
+};
+
+export const refresh = async (req: Request, res: Response) => {};
 export const validate = async (req: Request, res: Response) => {};
