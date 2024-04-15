@@ -5,7 +5,9 @@
     "module": "commonjs",
     "lib": ["es2019"],
     "sourceMap": true,
+    "strict": false,
     "outDir": "dist",
+    "noEmitOnError": false,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
@@ -19,7 +21,12 @@
     "emitDecoratorMetadata": true
   },
 
-  "include": ["./src/**/*.ts", "./test/**/*.ts", "src/scripts/gen-types.js", "./api/**/*"],
+  "include": [
+    "./src/**/*.ts",
+    "./test/**/*.ts",
+    "src/scripts/gen-types.js",
+    "./api/**/*"
+  ],
   "exclude": ["./node_modules/*", "dist"],
   "files": ["src/types/index.d.ts"]
 }
