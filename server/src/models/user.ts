@@ -1,5 +1,4 @@
-import { Schema, model, HydratedDocument } from "mongoose";
-import uniqueValidator from "mongoose-unique-validator";
+import { Schema, model } from "mongoose";
 
 enum Role {
   user = "user",
@@ -57,7 +56,4 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-UserSchema.plugin(uniqueValidator, { type: "mongoose-unique-validator" });
 export const User = model<IUser>("User", UserSchema);
-
-export type TUser = HydratedDocument<IUser>;

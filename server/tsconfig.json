@@ -15,18 +15,10 @@
     "removeComments": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-
-    "rootDirs": ["./src"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "ts-node": {
-    "require": ["tsconfig-paths/register"]
-  },
+
   "include": ["./src/**/*.ts", "./test/**/*.ts", "src/scripts/gen-types.js"],
   "exclude": ["./node_modules/*", "dist"],
   "files": ["src/types/index.d.ts"]

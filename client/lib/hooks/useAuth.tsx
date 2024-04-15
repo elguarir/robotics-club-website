@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import axios from "axios";
 import {
   useQuery,
@@ -7,7 +6,7 @@ import {
   UseMutationResult,
 } from "@tanstack/react-query";
 import { AuthResponse, LoginCredentials, User } from "./types";
-import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 /**
  * /auth/me result
@@ -107,58 +106,62 @@ export type AuthContext = {
   user: User | null;
   isLoading: boolean;
   login: UseMutationResult<AuthResponse, Error, LoginCredentials, unknown>;
-  logout: () => Promise<void>;
+  logout: UseMutationResult<void, Error, void, unknown>
 };
+
 const client = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`,
   withCredentials: true,
 });
 
 export function useAuth(): AuthContext {
   const queryClient = useQueryClient();
-
-  const [user, setUser] = useState<User | null>(null);
-  const login = async (credentials: LoginCredentials) => {
-    const { data } = await client.post<AuthResponse>(
-      "/auth/login",
-      credentials
-    );
-    return data;
-  };
-  const logout = async () => {
-    await client.post<AuthResponse>("/auth/logout");
-    setUser(null);
-  };
-
+  const router = useRouter();
+  // get user
   const getUser = async () => {
     const { data } = await client.get<AuthResponse>("/auth/me");
     return data;
   };
-
-  const currentUser = useQuery({
+  const loggedInUser = useQuery({
     queryKey: ["user"],
     queryFn: getUser,
-    
-    refetchOnReconnect: true,
-    refetchInterval: 1000 * 60 * 5,
     refetchOnWindowFocus: true,
   });
 
+  const user = loggedInUser.isError
+    ? null
+    : loggedInUser.data?.success
+    ? loggedInUser.data.data
+    : null;
+  // login
+  const login = async (credentials: LoginCredentials) => {
+    return (await client.post<AuthResponse>(
+      "/auth/login",
+      credentials
+    )).data
+   
+  };
   const loginMutation = useMutation({
     mutationFn: login,
-    onSuccess: () => {
-      // Invalidate and refetch
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
+  });
+  
+  // logout
+  const logout = async () => {
+    await client.get<AuthResponse>("/auth/logout");
+    queryClient.invalidateQueries({ queryKey: ["user"] });
+  };
+
+  const logOutMutation = useMutation({
+    mutationFn: logout,
   });
 
   return {
-    user: currentUser.data?.success ? currentUser.data.data : null,
-    isLoading: !user && loginMutation.isPending,
+    user: user,
+    isLoading: loggedInUser.isLoading,
     login: loginMutation,
-    logout,
+    logout: logOutMutation
   };
 }

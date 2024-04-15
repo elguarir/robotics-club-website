@@ -5,7 +5,7 @@ export const auth = Router();
 
 auth.post("/signup", controller.signup);
 auth.get("/me", authMiddleware.authenticated, controller.profile);
-auth.put("/me", authMiddleware.authenticated, controller.updateProfile);
+auth.put("/me", authMiddleware.authenticatedOnly, controller.updateProfile);
 auth.post("/login", controller.login);
 auth.get("/logout", controller.logout);
 auth.post("/refresh", controller.refresh);

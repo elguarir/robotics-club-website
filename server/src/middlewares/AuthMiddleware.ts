@@ -1,7 +1,7 @@
 import { NextFunction } from "express";
 import type { Request, Response } from "express";
-import { verify } from "@/utils/jwt";
-import { LoggedInUser } from "@/types/user";
+import { verify } from "../utils/jwt";
+import { LoggedInUser } from "../types/user";
 
 export const authenticated = async (
   req: Request,
@@ -11,36 +11,34 @@ export const authenticated = async (
   try {
     const token = req.cookies.token;
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized, please login to access this resource",
-      });
+      return next();
     }
-
     const verifiedToken = await verify({ token });
+
     if (!verifiedToken) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized, please login to access this resource",
-      });
+      res.clearCookie("token");
+      return next();
     }
 
     req.user = verifiedToken.payload as LoggedInUser;
     next();
   } catch (error) {
-    if (error instanceof Error) {
-      return res.status(401).json({
-        success: false,
-        message:
-          error.name === "JWTExpired"
-            ? "Session expired, please login to continue"
-            : "Invalid token provided.",
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        message: "An unknown error occurred",
-      });
-    }
+    res.clearCookie("token");
+    return next();
   }
+};
+
+export const authenticatedOnly = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const user = req.user as LoggedInUser;
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized, please login to access this resource",
+    });
+  }
+  next();
 };

@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
 import * as z from "zod";
 import type { Request, Response } from "express";
-import { User } from "@/models/user.model";
-import { encrypt } from "@/utils/jwt";
+import { User } from "../models/user";
+import { encrypt } from "../utils/jwt";
 
 export const signup = async (req: Request, res: Response) => {
   const registerSchema = z.object({
@@ -45,7 +45,7 @@ export const signup = async (req: Request, res: Response) => {
         password: hashedPassword,
         username,
         profilePic: new URL(
-          "https://ui-avatars.com/api/?name=" + name
+          "https://api.dicebear.com/8.x/initials/svg?fontSize=40&seed=" + name
         ).toString(),
       });
       await user.save();
@@ -175,7 +175,7 @@ export const login = async (req: Request, res: Response) => {
     } else {
       res.status(500).json({
         success: false,
-        errors: [{ path: "unknown", message: "An unknown error occurred" }],
+        message: "An unknown error occurred",
       });
     }
   }
@@ -190,7 +190,7 @@ export const logout = async (req: Request, res: Response) => {
 
 export const profile = async (req: Request, res: Response) => {
   res.status(200).json({
-    success: true,
+    success: req.user ? true : false,
     data: req.user ?? null,
   });
 };
@@ -211,7 +211,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     if (validatedData.success) {
       let { name, username, profilePic } = validatedData.data;
       let user = await User.findOneAndUpdate(
-        { _id: req.user._id },
+        { _id: req.user!._id },
         { name, username, profilePic },
         { new: true }
       );
@@ -249,7 +249,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     } else {
       res.status(500).json({
         success: false,
-        errors: [{ path: "unknown", message: "An unknown error occurred" }],
+        message: "An unknown error occurred",
       });
     }
   }

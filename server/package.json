@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "start": "tsc && node dist/index.js"
+    "build": "rimraf dist && npx tsc",
+    "start": "node dist/index.js",
+    "preview": "pnpm run build && pnpm run start"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +21,6 @@
     "jose": "^5.2.4",
     "mongodb": "^6.5.0",
     "mongoose": "^8.3.1",
-    "mongoose-unique-validator": "^5.0.0",
     "morgan": "^1.10.0",
     "zod": "^3.22.4"
   },
@@ -28,10 +29,9 @@
     "@types/cookie-parser": "^1.4.7",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
-    "@types/mongoose-unique-validator": "^1.0.9",
     "@types/morgan": "^1.9.9",
-    "mongoose-tsgen": "^9.2.13",
     "nodemon": "^3.1.0",
+    "rimraf": "^5.0.5",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",

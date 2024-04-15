@@ -19,6 +19,9 @@ import { useState } from "react";
 import Callout from "./ui/callout";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { AxiosError } from "axios";
+
 const formSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 8 characters"),
@@ -29,23 +32,24 @@ type FormValues = z.infer<typeof formSchema>;
 export function SignInForm() {
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
   });
 
   const onSubmit = async (values: FormValues) => {
-    await login.mutateAsync(values, {
-      onError: (error) => {
-         console.log("err-error", error);
+    login.mutate(values, {
+      onError: (error: Error | any) => {
+        if (error instanceof AxiosError) {
+          setError(error.response?.data?.message || error.message);
+          return;
+        }
       },
-      onSuccess: (data) => {
-        console.log("success-data", data);
+      onSuccess: () => {
+        setError(null), toast.success("Logged in successfully, redirecting...");
+        router.push("/dashboard");
       },
-      onSettled: (data, err) => {
-        console.log("settled-data", data);
-        console.log("settled-err", err)
-      }
     });
   };
 
@@ -60,7 +64,11 @@ export function SignInForm() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="email@example.com" {...field} />
+                  <Input
+                    autoComplete="email"
+                    placeholder="email@example.com"
+                    {...field}
+                  />
                 </FormControl>
                 <FormDescription></FormDescription>
                 <FormMessage />
@@ -74,7 +82,12 @@ export function SignInForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••" {...field} />
+                  <Input
+                    autoComplete="current-password"
+                    type="password"
+                    placeholder="••••••"
+                    {...field}
+                  />
                 </FormControl>
                 <FormDescription></FormDescription>
                 <FormMessage />
@@ -84,7 +97,7 @@ export function SignInForm() {
           {error && (
             <Callout showCloseButton variant={"danger"}>
               <ExclamationTriangleIcon className="w-5 h-5 mr-2" />
-              {error}
+              <p className="font-[450]">{error}</p>
             </Callout>
           )}
           <Button
