@@ -1,10 +1,10 @@
 "use client";
+import { User } from "@/lib/hooks/types";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BarLoader } from "react-spinners";
 type Props = {
-  children: React.ReactNode;
+  children: (user: User) => JSX.Element;
 };
 
 const AuthenticatedOnly = (props: Props) => {
@@ -14,9 +14,7 @@ const AuthenticatedOnly = (props: Props) => {
     return (
       <div className="flex flex-col items-center justify-center w-full h-screen gap-3">
         <BarLoader color="#3d3d3d" />
-        <p className="text-sm font-[450]">
-           Checking your credentials...
-        </p>
+        <p className="text-sm font-[450]">Checking your credentials...</p>
       </div>
     );
 
@@ -25,7 +23,7 @@ const AuthenticatedOnly = (props: Props) => {
     return null;
   }
 
-  return props.children;
+  return props.children(user);
 };
 
 export default AuthenticatedOnly;

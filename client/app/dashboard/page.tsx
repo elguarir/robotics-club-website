@@ -19,12 +19,12 @@ export default async function Dashboard() {
               Welcome back,{" "}
               <span className="text-primary">{session?.name}</span> 👋
             </h3>
-            <p className="text-sm text-muted-foreground">
-              You can start working on your assigned tasks, see your project
+            <p className="text-sm text-balance text-muted-foreground">
+              You can start working on your assigned tasks, <br /> see your project
               progress and more.
             </p>
             <Button className="mt-4" asChild>
-              <Link href="/dashboard/projects">View Tasks</Link>
+              <Link href="/dashboard/tasks">View Tasks</Link>
             </Button>
           </div>
         </div>
