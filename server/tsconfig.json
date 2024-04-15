@@ -19,7 +19,7 @@
     "emitDecoratorMetadata": true
   },
 
-  "include": ["./src/**/*.ts", "./test/**/*.ts", "src/scripts/gen-types.js"],
+  "include": ["./src/**/*.ts", "./test/**/*.ts", "src/scripts/gen-types.js", "./api/**/*"],
   "exclude": ["./node_modules/*", "dist"],
   "files": ["src/types/index.d.ts"]
 }

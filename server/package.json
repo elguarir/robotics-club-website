@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "rimraf dist && npx tsc",
+    "vercel-build": "echo no build needed",
     "start": "node dist/index.js",
     "preview": "pnpm run build && pnpm run start"
   },

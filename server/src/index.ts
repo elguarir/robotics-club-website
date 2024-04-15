@@ -10,10 +10,12 @@ import { connectToMongoDb } from "./db";
 dotenv.config();
 
 const app = express();
-app.use(cors({
-  origin: [config.CLIENT_URL],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: [config.CLIENT_URL],
+    credentials: true,
+  })
+);
 app.use(helmet());
 app.use(morgan("tiny"));
 app.use(cookieParser());
@@ -31,3 +33,5 @@ connectToMongoDb()
   .catch((error) => {
     console.error(error);
   });
+
+export default app;
