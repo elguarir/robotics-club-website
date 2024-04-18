@@ -26,12 +26,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import AuthenticatedOnly from "@/components/AuthenticatedOnly";
 import LogOutButton from "./_components/LogOutButton";
 import { links } from "@/lib/constants";
+import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 
 const DashboardLayout = (props: PropsWithChildren) => {
   return (
     <AuthenticatedOnly>
       {(user) => (
-        <div className="grid min-h-screen w-full md:grid-cols-[250px_1fr] lg:grid-cols-[280px_1fr]">
+        <div className="grid overflow-hidden fixed w-full md:grid-cols-[250px_1fr] lg:grid-cols-[280px_1fr]">
           <div className="hidden border-r bg-muted/40 md:block">
             <div className="flex flex-col h-full max-h-screen gap-2">
               <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
@@ -187,7 +188,9 @@ const DashboardLayout = (props: PropsWithChildren) => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </header>
-            {props.children}
+            <div>
+              <MaxWidthWrapper>{props.children}</MaxWidthWrapper>
+            </div>
           </div>
         </div>
       )}

@@ -21,6 +21,7 @@ import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
+import { BarLoader } from "react-spinners";
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -30,7 +31,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export function SignInForm() {
-  const { login } = useAuth();
+  const { login, user, isLoading } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -47,11 +48,27 @@ export function SignInForm() {
         }
       },
       onSuccess: () => {
-        setError(null), toast.success("Logged in successfully, redirecting...");
+        setError(null),
+          toast.success("Logged in successfully, redirecting...", {
+            position: "bottom-left",
+          });
         router.push("/dashboard");
       },
     });
   };
+
+  if (isLoading)
+    return (
+      <div className="flex flex-col items-center justify-center w-full h-60 gap-3">
+        <BarLoader color="#3d3d3d" />
+        <p className="text-sm font-[450]">Loading...</p>
+      </div>
+    );
+
+  if (user) {
+    router.push("/dashboard");
+    return;
+  }
 
   return (
     <Form {...form}>

@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { AuthResponse, LoginCredentials, User } from "./types";
 import { useRouter } from "next/navigation";
+import { client } from "../helpers/client";
 
 /**
  * /auth/me result
@@ -105,21 +106,19 @@ error:
 export type AuthContext = {
   user: User | null;
   isLoading: boolean;
-  login: UseMutationResult<AuthResponse, Error, LoginCredentials, unknown>;
-  logout: UseMutationResult<void, Error, void, unknown>
+  login: UseMutationResult<AuthResponse<User>, Error, LoginCredentials, unknown>;
+  logout: UseMutationResult<void, Error, void, unknown>;
 };
 
-const client = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`,
-  withCredentials: true,
-});
+
 
 export function useAuth(): AuthContext {
   const queryClient = useQueryClient();
+
   const router = useRouter();
   // get user
   const getUser = async () => {
-    const { data } = await client.get<AuthResponse>("/auth/me");
+    const { data } = await client.get<AuthResponse<User>>("/auth/me");
     return data;
   };
   const loggedInUser = useQuery({
@@ -135,11 +134,7 @@ export function useAuth(): AuthContext {
     : null;
   // login
   const login = async (credentials: LoginCredentials) => {
-    return (await client.post<AuthResponse>(
-      "/auth/login",
-      credentials
-    )).data
-   
+    return (await client.post<AuthResponse<User>>("/auth/login", credentials)).data;
   };
   const loginMutation = useMutation({
     mutationFn: login,
@@ -147,10 +142,10 @@ export function useAuth(): AuthContext {
       queryClient.invalidateQueries({ queryKey: ["user"] });
     },
   });
-  
+
   // logout
   const logout = async () => {
-    await client.get<AuthResponse>("/auth/logout");
+    await client.get<AuthResponse<User>>("/auth/logout");
     queryClient.invalidateQueries({ queryKey: ["user"] });
   };
 
@@ -162,6 +157,6 @@ export function useAuth(): AuthContext {
     user: user,
     isLoading: loggedInUser.isLoading,
     login: loginMutation,
-    logout: logOutMutation
+    logout: logOutMutation,
   };
 }

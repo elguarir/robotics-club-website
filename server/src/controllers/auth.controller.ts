@@ -3,6 +3,7 @@ import * as z from "zod";
 import type { Request, Response } from "express";
 import { User } from "../models/user";
 import { encrypt } from "../utils/jwt";
+import { generateProfilePic } from "../utils/generateProfilePic";
 
 export const signup = async (req: Request, res: Response) => {
   const registerSchema = z.object({
@@ -44,9 +45,7 @@ export const signup = async (req: Request, res: Response) => {
         email,
         password: hashedPassword,
         username,
-        profilePic: new URL(
-          "https://api.dicebear.com/8.x/initials/svg?fontSize=40&seed=" + name
-        ).toString(),
+        profilePic: generateProfilePic(name),
       });
       await user.save();
 
